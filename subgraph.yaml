@@ -1,0 +1,42 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: kBTC
+    network: bsc
+    source:
+      address: "0x9356f6d95b8E109F4b7Ce3E49D672967d3B48383"
+      abi: kBTC
+      startBlock: 40513587
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AdminChanged
+        - Approval
+        - BeaconUpgraded
+        - EnforcedOptionSet
+        - Initialized
+        - MsgInspectorSet
+        - NewAggregator
+        - NewRate
+        - NewSlash
+        - OFTReceived
+        - OFTSent
+        - OwnershipTransferred
+        - PeerSet
+        - PreCrimeSet
+        - RelayToBTCAddress
+        - Transfer
+        - Upgraded
+      abis:
+        - name: kBTC
+          file: ./abis/kBTC.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/k-btc.ts
