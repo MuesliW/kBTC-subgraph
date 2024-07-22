@@ -2,7 +2,7 @@ import {
   Transfer
 } from "../generated/kBTC/kBTC"
 
-import {TokenBalance} from "../generated/schema"
+import {TokenBalance, TokenBalanceHistory} from "../generated/schema"
 
 import {
   fetchTokenDetails,
@@ -31,7 +31,6 @@ export function handleTransfer(event: Transfer): void {
   if (!fromAccount || !toAccount) {
   return;
   }
-
   //setting the token balance of the 'from' account
   let fromTokenBalance = TokenBalance.load(token.id + "-" + fromAccount.id);
   if (!fromTokenBalance) { //if balance is not already saved
@@ -44,12 +43,22 @@ export function handleTransfer(event: Transfer): void {
         fromTokenBalance.token = token.id;
         fromTokenBalance.account = fromAccount.id;
   }
-
-  fromTokenBalance.amount = fetchBalance(event.address,event.params.from)
-  //filtering out zero-balance tokens - optional
+  let balanceHistoryItem = new TokenBalanceHistory(
+    event.transaction.hash.toHexString() + toAccount.id
+    );
+  fromTokenBalance.amount = fetchBalance(event.address,event.params.from);
   if(fromTokenBalance.amount != BigDecimal.fromString("0")){
-    fromTokenBalance.save();
+      balanceHistoryItem = new TokenBalanceHistory(
+      event.transaction.hash.toHexString() + fromAccount.id
+      );
+      balanceHistoryItem.account = fromAccount.id;
+      balanceHistoryItem.amount = fromTokenBalance.amount;
+      balanceHistoryItem.timestamp = event.block.timestamp.toI32();
+      balanceHistoryItem.save();
   }
+  
+  //filtering out zero-balance tokens - optional
+  fromTokenBalance.save();
   
   //setting the token balance of the 'to' account
   let toTokenBalance = TokenBalance.load(token.id + "-" + toAccount.id);
@@ -59,7 +68,8 @@ export function handleTransfer(event: Transfer): void {
       toTokenBalance.account = toAccount.id;
     }
   toTokenBalance.amount = fetchBalance(event.address,event.params.to)
-  if(toTokenBalance.amount != BigDecimal.fromString("0")){
-    toTokenBalance.save();
-  }
+  balanceHistoryItem.account = toAccount.id;
+  balanceHistoryItem.amount = toTokenBalance.amount;
+  balanceHistoryItem.save();
+  toTokenBalance.save();
 }

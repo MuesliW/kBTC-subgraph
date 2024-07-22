@@ -1,3 +1,10 @@
+# token balance details
+type TokenBalanceHistory @entity {
+  id: ID!
+  account: Account!
+  amount: BigDecimal!
+  timestamp: Int!
+}
 # Token details
 type Token @entity {
   id: ID!
@@ -19,11 +26,8 @@ type Account @entity {
 # token balance details
 type TokenBalance @entity {
   id: ID!
-  #token
   token: Token!
-  #account
   account: Account!
-  #amount
   amount: BigDecimal!
 }
 
