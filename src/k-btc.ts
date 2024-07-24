@@ -44,16 +44,16 @@ export function handleTransfer(event: Transfer): void {
         fromTokenBalance.account = fromAccount.id;
   }
   let balanceHistoryItem = new TokenBalanceHistory(
-    event.transaction.hash.toHexString() + toAccount.id
+    event.transaction.hash.toHexString() + fromAccount.id
     );
   fromTokenBalance.amount = fetchBalance(event.address,event.params.from);
-  if(fromTokenBalance.amount != BigDecimal.fromString("0")){
+  if(fromTokenBalance.account != "0x0000000000000000000000000000000000000000"){
       balanceHistoryItem = new TokenBalanceHistory(
       event.transaction.hash.toHexString() + fromAccount.id
       );
+      balanceHistoryItem.timestamp = event.block.timestamp.toI32();
       balanceHistoryItem.account = fromAccount.id;
       balanceHistoryItem.amount = fromTokenBalance.amount;
-      balanceHistoryItem.timestamp = event.block.timestamp.toI32();
       balanceHistoryItem.save();
   }
   
@@ -68,8 +68,15 @@ export function handleTransfer(event: Transfer): void {
       toTokenBalance.account = toAccount.id;
     }
   toTokenBalance.amount = fetchBalance(event.address,event.params.to)
-  balanceHistoryItem.account = toAccount.id;
-  balanceHistoryItem.amount = toTokenBalance.amount;
-  balanceHistoryItem.save();
+  if(toTokenBalance.account != "0x0000000000000000000000000000000000000000"){
+    balanceHistoryItem = new TokenBalanceHistory(
+      event.transaction.hash.toHexString() + toAccount.id
+      );
+    balanceHistoryItem.account = toAccount.id;
+    balanceHistoryItem.amount = toTokenBalance.amount;
+    balanceHistoryItem.timestamp = event.block.timestamp.toI32();
+    balanceHistoryItem.save();
+  }
+  
   toTokenBalance.save();
 }
